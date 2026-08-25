@@ -1,0 +1,29 @@
+groups:
+  - name: kubernetes-platform
+    rules:
+      - alert: KubernetesPodCrashLooping
+        expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod is restarting repeatedly"
+          description: "Container restart count increased more than three times in 15 minutes."
+
+      - alert: KubernetesNodeHighCPU
+        expr: (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 0.90
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node CPU utilization is above 90%"
+          description: "Sustained CPU pressure can impact scheduling and workload latency."
+
+      - alert: KubernetesNodeDiskPressure
+        expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kubernetes node reports DiskPressure"
+          description: "Investigate filesystem usage, images, logs and ephemeral storage."
