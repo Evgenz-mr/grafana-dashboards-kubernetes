@@ -1,0 +1,26 @@
+name: portfolio-observability-validation
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install YAML parser
+        run: pip install pyyaml
+      - name: Parse portfolio alert rules
+        run: |
+          python - <<'PY'
+          import pathlib, yaml
+          for path in pathlib.Path('portfolio').rglob('*.yaml'):
+              print('checking', path)
+              list(yaml.safe_load_all(path.read_text()))
+          PY
+      - name: Ensure runbooks and SLO docs exist
+        run: test -s portfolio/SLO.md && test -d portfolio/runbooks
