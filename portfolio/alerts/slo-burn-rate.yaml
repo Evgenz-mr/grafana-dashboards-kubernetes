@@ -1,0 +1,28 @@
+groups:
+  - name: portfolio-slo
+    rules:
+      - alert: ApiAvailabilityFastBurn
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            clamp_min(sum(rate(http_requests_total[5m])), 0.001)
+          ) > (14.4 * 0.001)
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: API is consuming the 99.9% availability error budget too quickly
+          runbook: portfolio/runbooks/high-error-rate.md
+      - alert: ApiAvailabilitySlowBurn
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[1h]))
+            /
+            clamp_min(sum(rate(http_requests_total[1h])), 0.001)
+          ) > (2 * 0.001)
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: API availability error budget burn is elevated
